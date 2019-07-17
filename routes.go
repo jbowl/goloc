@@ -60,6 +60,10 @@ func (gApi *geoDB) getLocations(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 	}
+	//w.Header().Set(key"Content-Type", value: "text/plain; charset=utf8")
+	w.WriteHeader(http.StatusOK);
+	
+
 }
 
 func newRouter(gApi *geoDB) *mux.Router {
