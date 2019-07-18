@@ -1,4 +1,4 @@
-package main2
+package geoloc
 
 import (
 	"encoding/json"
@@ -55,7 +55,7 @@ func mqRequest(url string) (llresp *LatLngResp, err error) {
 		return nil, err
 	}
 
-	//req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 
@@ -66,11 +66,7 @@ func mqRequest(url string) (llresp *LatLngResp, err error) {
 	defer resp.Body.Close()
 
 	var rw ResultWrapper
-
 	json.NewDecoder(resp.Body).Decode(&rw)
-	if err != nil {
-		return nil, err
-	}
 
 	llResp := LatLngResp{
 		rw.Res[0].ProvLoc.Location,
@@ -80,8 +76,7 @@ func mqRequest(url string) (llresp *LatLngResp, err error) {
 	return &llResp, nil
 }
 
-// LatLng return a json struct holding geoloc lat and lng for location
-//    use mapquest GEOLOC REST api to get lat lng
+// LatLng return a json struct holding geoloc lat and lng for laction
 func (mq *MqAPI) LatLng(location string) (latlng *LatLngResp, err error) {
 
 	baseURL, err := url.Parse("http://open.mapquestapi.com") ///geocoding/v1/address")
