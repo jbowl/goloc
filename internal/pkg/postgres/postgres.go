@@ -10,14 +10,14 @@ import (
 	"github.com/jbowl/goloc/internal/pkg/goloc"
 )
 
-// Locator yada yada yada
+// Locator ptrs to db and mapquest api
 type Locator struct {
 	Db *sql.DB
 	Mq *geoloc.MqAPI
 }
 
 // InjectAPIMiddleWare yada
-func (gAPI *Locator) InjectAPIMiddleWare(next http.Handler) http.Handler {
+func (ls *Locator) InjectAPIMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		/*
 			ctx := r.Context()
@@ -30,23 +30,7 @@ func (gAPI *Locator) InjectAPIMiddleWare(next http.Handler) http.Handler {
 
 }
 
-/*
-
-type LocationService interface {
-	Location(ID int) (*Location, error)                   //GET by id
-	Locations(ID int, Time time.Time) ([]Location, error) // GET all id and time
-
-	CreateLocation(Loc Location) error
-
-	GeoLoc(Address string) (*MapAddress, error) // get address by lat long
-}
-
-*/
-
-// Location yada yada yada
-func (ls *Locator) Location(ID int) (*goloc.Location, error) {
-	return nil, nil
-}
+//Locations -
 func (ls *Locator) Locations(email string) ([]goloc.Location, error) {
 
 	i := make([]goloc.Location, 0)
@@ -79,25 +63,65 @@ func (ls *Locator) Locations(email string) ([]goloc.Location, error) {
 
 	return i, nil
 }
-func (ls *Locator) CreateLocation(loc goloc.Location) error {
 
-	sqlStatement := `
-		INSERT INTO locations (id, address, lat, lng)
-		VALUES ($1, $2, $3, $4)`
+//Location -
+func (ls *Locator) Location(id int) (*goloc.Location, error) {
 
-	_, err := ls.Db.Exec(sqlStatement, 1, loc.Address, loc.Lat, loc.Lng)
+	sqlStatement := `SELECT address, lat, lng, date FROM locations WHERE id=$1;`
 
-	return err
+	row := ls.Db.QueryRow(sqlStatement, id)
+	var address string
+	var lat, lng float32
+	var time time.Time
+
+	err := row.Scan(&address, &lat, &lng, &time)
+	if err != nil {
+		return nil, err
+	}
+
+	return &goloc.Location{ID: id, Address: address, Lat: lat, Lng: lng, Date: time}, nil
 }
+
+// CreateLocation Create a Location record for user with email
+func (ls *Locator) CreateLocation(email string, loc goloc.Location) (int64, error) {
+
+	sqlStatement := `SELECT id FROM users WHERE email=$1;`
+	var userid int
+
+	row := ls.Db.QueryRow(sqlStatement, email)
+	err := row.Scan(&userid)
+	if err != nil {
+		return -1, err
+	}
+
+	// LastInsertedId isn't implemented for postgreSQL
+	sqlStatement = `
+		INSERT INTO locations (userid, address, lat, lng)
+		VALUES ($1, $2, $3, $4) RETURNING id`
+
+	var id int64
+	err = ls.Db.QueryRow(sqlStatement, userid, loc.Address, loc.Lat, loc.Lng).Scan(&id)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return id, nil
+}
+
+// GeoLoc - call thru to mapquest api
 func (ls *Locator) GeoLoc(Address string) (*goloc.MapAddress, error) {
 
 	ll, err := ls.Mq.LatLng(Address)
-	//mapAddress, err := ls.Mq.LatLng(location)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &goloc.MapAddress{Address: ll.Address, Lat: ll.Lat, Lng: ll.Lng}, nil
+}
+
+// DeleteLocation todo
+func (ls *Locator) DeleteLocation() {
 
 }

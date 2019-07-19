@@ -2,7 +2,18 @@ package goloc
 
 import "time"
 
-//Location yada yada yada
+// Define Root Domain pkg
+
+// User just email for now
+type User struct {
+	ID    int
+	Email string
+}
+
+// Location Date - time recorded,
+//          Address - describe Lat Lng could be street address just city,state etc...
+//          Lat - lattitude
+//          Lng - longitude
 type Location struct {
 	ID      int
 	Date    time.Time
@@ -11,28 +22,21 @@ type Location struct {
 	Lng     float32
 }
 
-// User yada yada yada
-type User struct {
-	ID    int
-	Email string
-}
-
-// MapAddress yada yada yada
+// MapAddress -
 type MapAddress struct {
 	Address string
 	Lat     float32
 	Lng     float32
 }
 
-// CRUD
-
-// Locator yada yada yada
+// Locator abstract interface, eventually fully CRUD
 type Locator interface {
 	Locations(email string) ([]Location, error) // READ GET all
+	Location(id int) (*Location, error)         // READ GET one record
 
-	CreateLocation(Loc Location) error  //CREATE
-	
-	DeleteLocation()
+	CreateLocation(email string, Loc Location) (int64, error) //CREATE
+
+	DeleteLocation() // DELETE todo
 
 	GeoLoc(Address string) (*MapAddress, error) // get address by lat long
 }

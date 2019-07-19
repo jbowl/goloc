@@ -5,23 +5,18 @@ package main
 import (
 	"context"
 	"database/sql"
-	"net/http"
-
-	//	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
 	_ "github.com/lib/pq" //
-	//	"net/http"
-
-	//"github.com/jbowl/gopostgresql1/mqapi"
 
 	"github.com/jbowl/goloc/internal/pkg/geoloc"
 	"github.com/jbowl/goloc/internal/pkg/postgres"
-	"github.com/pkg/errors"
+	"github.com/pkg/errors" // TODO research this
 )
 
 // sudo su - postgres

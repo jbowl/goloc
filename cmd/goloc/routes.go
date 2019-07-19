@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"net/http"
 
@@ -10,9 +11,8 @@ import (
 	"github.com/jbowl/goloc/internal/pkg/goloc"
 )
 
-var api goloc.Locator
+var api goloc.Locator // global to this file, TODO handle a better way
 
-//  done
 func reqGeoLoc(w http.ResponseWriter, r *http.Request) {
 	/* not a good idea
 	ls, ok := r.Context().Value("interface").(*postgres.LocationService)
@@ -21,12 +21,6 @@ func reqGeoLoc(w http.ResponseWriter, r *http.Request) {
 	}
 	*/
 	location := r.URL.Query().Get("location")
-
-	fmt.Println(location)
-
-	//  api.GeoLoc(location)
-
-	//mapAddress, err := ls.Mq.LatLng(location)
 
 	mapAddress, err := api.GeoLoc(location)
 
@@ -42,15 +36,17 @@ func reqGeoLoc(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func CreateLocation(Loc goloc.Location) error {
-
-	return nil
-}
-
 // write one record to Loctions table
 func storeLocation(w http.ResponseWriter, r *http.Request) {
-	var loc goloc.Location
 
+	user := r.URL.Query().Get("user")
+
+	if len(user) < 1 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var loc goloc.Location
 	err := json.NewDecoder(r.Body).Decode(&loc)
 
 	if err != nil {
@@ -59,7 +55,7 @@ func storeLocation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.CreateLocation(loc)
+	id, err := api.CreateLocation(user, loc)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -67,10 +63,12 @@ func storeLocation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Location", "TODO")
+	location := fmt.Sprintf("%s/location/%d", r.Host, id)
+
+	w.Header().Set("Location", location)
 	w.WriteHeader(http.StatusCreated)
 
-	w.Write([]byte("TODO return body created"))
+	w.Write([]byte("TODO return body for create requst"))
 }
 
 // return all rows in Locations table as JSON
@@ -80,13 +78,8 @@ func getLocations(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(email)
 
-	//  api.GeoLoc(location)
-
-	//mapAddress, err := ls.Mq.LatLng(location)
-
 	locs, err := api.Locations(email)
 
-	// respond to this request with a call to Mapquest API to get lat/lng
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
@@ -97,12 +90,37 @@ func getLocations(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&locs)
 }
 
+// return all rows in Locations table as JSON
+func getLocation(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Invalid id argument"))
+		return
+	}
+
+	// respond to this request with a call to Mapquest API to get lat/lng
+	locs, err := api.Location(id)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&locs)
+}
+
+// TODO add logging messages
 func middleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
-
 }
 
 // NewRouter set handler funcs and middleware
@@ -112,6 +130,7 @@ func NewRouter(service goloc.Locator) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
 	r.HandleFunc("/location", storeLocation).Methods("POST")
+	r.HandleFunc("/location/{id}", getLocation).Methods("GET")
 
 	r.HandleFunc("/locations", getLocations).Methods("GET")
 
