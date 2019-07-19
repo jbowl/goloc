@@ -14,18 +14,14 @@ import (
 	"os/signal"
 	"time"
 
-	//	"github.com/jinzhu/gorm"
-	//	_ "github.com/jinzhu/gorm/dialects/postgres"
-
 	_ "github.com/lib/pq" //
 	//	"net/http"
 
 	//"github.com/jbowl/gopostgresql1/mqapi"
 
-	"github.com/pkg/errors"
-	//	"github.com/jbowl/goloc"
 	"github.com/jbowl/goloc/internal/pkg/geoloc"
 	"github.com/jbowl/goloc/internal/pkg/postgres"
+	"github.com/pkg/errors"
 )
 
 // sudo su - postgres
@@ -48,15 +44,6 @@ func dsn() *string {
 	return &dsn
 }
 
-//Location define table for GORM
-/*
-type Location struct {
-	Date    time.Time
-	Address string
-	Lat     float32
-	Lng     float32
-}
-*/
 // https://blog.cloudflare.com/exposing-go-on-the-internet/
 // fuser 8080/tcp
 // fuser -k 8080/tcp
@@ -73,7 +60,7 @@ func main() {
 
 	key := os.Getenv("MQ_CONSUMER_KEY")
 
-	ls := &postgres.LocationService{Db: db, Mq: &geoloc.MqAPI{Consumerkey: key}}
+	ls := &postgres.Locator{Db: db, Mq: &geoloc.MqAPI{Consumerkey: key}}
 
 	router := NewRouter(ls)
 

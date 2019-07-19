@@ -26,12 +26,13 @@ type MapAddress struct {
 
 // CRUD
 
-// LocationService yada yada yada
-type LocationService interface {
-	Location(ID int) (*Location, error)                   //GET by id
-	Locations(ID int, Time time.Time) ([]Location, error) // GET all id and time
+// Locator yada yada yada
+type Locator interface {
+	Locations(email string) ([]Location, error) // READ GET all
 
-	CreateLocation(Loc Location) error
+	CreateLocation(Loc Location) error  //CREATE
+	
+	DeleteLocation()
 
 	GeoLoc(Address string) (*MapAddress, error) // get address by lat long
 }

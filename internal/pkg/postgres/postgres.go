@@ -10,14 +10,14 @@ import (
 	"github.com/jbowl/goloc/internal/pkg/goloc"
 )
 
-// LocationService yada yada yada
-type LocationService struct {
+// Locator yada yada yada
+type Locator struct {
 	Db *sql.DB
 	Mq *geoloc.MqAPI
 }
 
 // InjectAPIMiddleWare yada
-func (gAPI *LocationService) InjectAPIMiddleWare(next http.Handler) http.Handler {
+func (gAPI *Locator) InjectAPIMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		/*
 			ctx := r.Context()
@@ -44,17 +44,52 @@ type LocationService interface {
 */
 
 // Location yada yada yada
-func (ls *LocationService) Location(ID int) (*goloc.Location, error) {
+func (ls *Locator) Location(ID int) (*goloc.Location, error) {
 	return nil, nil
 }
-func (ls *LocationService) Locations(ID int, Time time.Time) ([]goloc.Location, error) {
+func (ls *Locator) Locations(email string) ([]goloc.Location, error) {
+
 	i := make([]goloc.Location, 0)
+
+	rows, err := ls.Db.Query("select locations.id, locations.date, locations.address,"+
+		" locations.lat, locations.lng from locations, users where users.email = $1",
+		email)
+
+	if err != nil {
+		return i, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var time time.Time
+		var address string
+		var lat, lng float32
+		err = rows.Scan(&id, &time, &address, &lat, &lng)
+		if err != nil {
+			// handle this error
+			return i, err
+		}
+		i = append(i, goloc.Location{ID: id, Date: time, Address: address, Lat: lat, Lng: lng})
+	}
+	// get any error encountered during iteration
+	err = rows.Err()
+	if err != nil {
+		return i, err
+	}
+
 	return i, nil
 }
-func (ls *LocationService) CreateLocation(goloc.Location) error {
-	return nil
+func (ls *Locator) CreateLocation(loc goloc.Location) error {
+
+	sqlStatement := `
+		INSERT INTO locations (id, address, lat, lng)
+		VALUES ($1, $2, $3, $4)`
+
+	_, err := ls.Db.Exec(sqlStatement, 1, loc.Address, loc.Lat, loc.Lng)
+
+	return err
 }
-func (ls *LocationService) GeoLoc(Address string) (*goloc.MapAddress, error) {
+func (ls *Locator) GeoLoc(Address string) (*goloc.MapAddress, error) {
 
 	ll, err := ls.Mq.LatLng(Address)
 	//mapAddress, err := ls.Mq.LatLng(location)
@@ -66,17 +101,3 @@ func (ls *LocationService) GeoLoc(Address string) (*goloc.MapAddress, error) {
 	return &goloc.MapAddress{Address: ll.Address, Lat: ll.Lat, Lng: ll.Lng}, nil
 
 }
-
-/*
-
-func (ls *LocationService) writelocation() {
-
-	sqlStatement := `
-INSERT INTO users (age, email, first_name, last_name)
-VALUES ($1, $2, $3, $4)`
-	_, err = db.Exec(sqlStatement, 30, "jon@calhoun.io", "Jonathan", "Calhoun")
-	if err != nil {
-		panic(err)
-	}
-}
-*/
