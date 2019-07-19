@@ -1,4 +1,4 @@
-# golog
+# goloc
 
 A friend is requesting an android app that will record GEOLOC lat and long on demand. The intent is to turn off google location services and track this himself. 
 
