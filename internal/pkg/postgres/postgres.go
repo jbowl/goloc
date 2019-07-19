@@ -3,6 +3,7 @@ package postgres
 import (
 	//	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -124,4 +125,73 @@ func (ls *Locator) GeoLoc(Address string) (*goloc.MapAddress, error) {
 // DeleteLocation todo
 func (ls *Locator) DeleteLocation() {
 
+}
+
+// CreateUsersTable creates if doesn't exist
+func (ls *Locator) CreateUsersTable() error {
+
+	const sql = `
+	CREATE TABLE IF NOT EXISTS users (
+		id serial PRIMARY KEY,
+		email TEXT UNIQUE NOT NULL
+	)`
+
+	// Exec executes a query without returning any rows.
+	res, err := ls.Db.Exec(sql)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(res)
+
+	return nil
+}
+
+// CreateLocationsTable creates if doesn't exist
+func (ls *Locator) CreateLocationsTable() error {
+
+	const sql = `
+	CREATE TABLE IF NOT EXISTS locations (
+		id SERIAL PRIMARY KEY, 
+		address text, 
+		userid int, 
+		lat NUMERIC NOT NULL, 
+		lng NUMERIC NOT NULL, 
+		date DATE NOT NULL DEFAULT CURRENT_DATE
+	)`
+
+	// Exec executes a query without returning any rows.
+	_, err := ls.Db.Exec(sql)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func dsn() string {
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable",
+		"localhost",
+		"5432",
+		"postgres",
+		"postgres",
+		"loc_db")
+
+	//	os.Getenv("DB_HOST"),
+	//	os.Getenv("DB_PORT"),
+	//	os.Getenv("DB_USERNAME"),
+	//	os.Getenv("DB_PASSWORD"),
+	//	os.Getenv("DB_NAME"))
+	return dsn
+}
+
+//OpenDatabase implementation for generic interface call
+func (ls *Locator) OpenDatabase() (*sql.DB, error) {
+	return sql.Open("postgres", dsn())
+}
+
+// Initialize - not currently called for postrgresql implementation
+func (ls *Locator) Initialize() error {
+	return nil
 }

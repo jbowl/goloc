@@ -1,6 +1,9 @@
 package goloc
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 // Define Root Domain pkg
 
@@ -29,8 +32,13 @@ type MapAddress struct {
 	Lng     float32
 }
 
-// Locator abstract interface, eventually fully CRUD
+// Locator - abstract interface, eventually fully CRUD
 type Locator interface {
+	Initialize() error // generic startup routine
+	OpenDatabase() (*sql.DB, error)
+	CreateUsersTable() error
+	CreateLocationsTable() error
+
 	Locations(email string) ([]Location, error) // READ GET all
 	Location(id int) (*Location, error)         // READ GET one record
 

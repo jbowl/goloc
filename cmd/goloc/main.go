@@ -4,15 +4,11 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
-
-	_ "github.com/lib/pq" //
 
 	"github.com/jbowl/goloc/internal/pkg/geoloc"
 	"github.com/jbowl/goloc/internal/pkg/postgres"
@@ -22,40 +18,37 @@ import (
 // sudo su - postgres
 // psql -U postgres -d loc_db
 
-func dsn() *string {
-
-	dsn := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable",
-		"localhost",
-		"5432",
-		"postgres",
-		"postgres",
-		"loc_db")
-
-	//	os.Getenv("DB_HOST"),
-	//	os.Getenv("DB_PORT"),
-	//	os.Getenv("DB_USERNAME"),
-	//	os.Getenv("DB_PASSWORD"),
-	//	os.Getenv("DB_NAME"))
-	return &dsn
-}
-
 // https://blog.cloudflare.com/exposing-go-on-the-internet/
 // fuser 8080/tcp
 // fuser -k 8080/tcp
 func main() {
-	db, err := sql.Open("postgres", *dsn())
+	key := os.Getenv("MQ_CONSUMER_KEY")
+	ls := &postgres.Locator{Db: nil, Mq: &geoloc.MqAPI{Consumerkey: key}}
+
+	db, err := ls.OpenDatabase()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	defer db.Close()
+	ls.Db = db
 
 	sigChannel := make(chan os.Signal, 1)
 	signal.Notify(sigChannel, os.Interrupt)
 
-	key := os.Getenv("MQ_CONSUMER_KEY")
+	err = ls.CreateUsersTable()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	ls := &postgres.Locator{Db: db, Mq: &geoloc.MqAPI{Consumerkey: key}}
+	err = ls.CreateLocationsTable()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = ls.Initialize()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	router := NewRouter(ls)
 
