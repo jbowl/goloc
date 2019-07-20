@@ -13,4 +13,4 @@ Also, need to see what can be accomplished with PostGIS. https://postgis.net/
 
 Working on proper package layout. Root interface package. 
 
-
+Abstract-ish interface is making mock db testing easier.
