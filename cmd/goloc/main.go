@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+
 	"log"
 	"net/http"
 	"os"
@@ -33,9 +34,6 @@ func main() {
 	defer db.Close()
 	ls.Db = db
 
-	sigChannel := make(chan os.Signal, 1)
-	signal.Notify(sigChannel, os.Interrupt)
-
 	err = ls.CreateUsersTable()
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +48,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := NewRouter(ls)
+	sigChannel := make(chan os.Signal, 1)
+	signal.Notify(sigChannel, os.Interrupt)
+
+	SetAPI(ls)
+	router := NewRouter()
 
 	/*
 

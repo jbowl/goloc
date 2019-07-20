@@ -9,6 +9,7 @@ import (
 
 	"github.com/jbowl/goloc/internal/pkg/geoloc"
 	"github.com/jbowl/goloc/internal/pkg/goloc"
+	_ "github.com/lib/pq" //
 )
 
 // Locator ptrs to db and mapquest api

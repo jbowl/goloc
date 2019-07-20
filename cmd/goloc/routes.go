@@ -123,10 +123,13 @@ func middleWare(next http.Handler) http.Handler {
 	})
 }
 
-// NewRouter set handler funcs and middleware
-func NewRouter(service goloc.Locator) *mux.Router {
-
+// SetAPI -
+func SetAPI(service goloc.Locator) {
 	api = service
+}
+
+// NewRouter set handler funcs and middleware
+func NewRouter() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
 	r.HandleFunc("/location", storeLocation).Methods("POST")
