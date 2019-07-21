@@ -1,9 +1,8 @@
 # goloc
 
-A friend is requesting an android app that will record GEOLOC lat and lng on demand. The intent is to turn off google location services and track this himself. 
+Writing an android app that will record GEOLOC lat and lng on demand. The intent is to turn off google location services. 
 
 I'm going to start with Mapquest's REST apis. https://developer.mapquest.com/documentation/open/geocoding-api/ 
-The service appears free for up to 15k calls a month.
 
 ~~Need to research using PostgreSQL with GORM for simplified database operations in go. https://gorm.io/~~
 
