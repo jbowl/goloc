@@ -67,7 +67,7 @@ func (ls *Locator) Locations(email string) ([]goloc.Location, error) {
 }
 
 //Location -
-func (ls *Locator) Location(id int) (*goloc.Location, error) {
+func (ls *Locator) Location(id interface{}) (*goloc.Location, error) {
 
 	sqlStatement := `SELECT address, lat, lng, date FROM locations WHERE id=$1;`
 
@@ -84,8 +84,26 @@ func (ls *Locator) Location(id int) (*goloc.Location, error) {
 	return &goloc.Location{ID: id, Address: address, Lat: lat, Lng: lng, Date: time}, nil
 }
 
+// CreateUser -
+func (ls *Locator) CreateUser(email string) (interface{}, error) {
+	// LastInsertedId isn't implemented for postgreSQL
+	sqlStatement := `
+		INSERT INTO users (email)
+		VALUES ($1) RETURNING id`
+
+	var id int64
+	err := ls.Db.QueryRow(sqlStatement, email).Scan(&id)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return id, nil
+
+}
+
 // CreateLocation Create a Location record for user with email
-func (ls *Locator) CreateLocation(email string, loc goloc.Location) (int64, error) {
+func (ls *Locator) CreateLocation(email string, loc goloc.Location) (interface{}, error) {
 
 	sqlStatement := `SELECT id FROM users WHERE email=$1;`
 	var userid int
@@ -188,11 +206,18 @@ func dsn() string {
 }
 
 //OpenDatabase implementation for generic interface call
-func (ls *Locator) OpenDatabase() (*sql.DB, error) {
-	return sql.Open("postgres", dsn())
+func (ls *Locator) OpenDatabase() error {
+	db, err := sql.Open("postgres", dsn())
+	ls.Db = db
+	return err
 }
 
 // Initialize - not currently called for postrgresql implementation
 func (ls *Locator) Initialize() error {
 	return nil
+}
+
+// Close -
+func (ls *Locator) Close() {
+	ls.Db.Close()
 }

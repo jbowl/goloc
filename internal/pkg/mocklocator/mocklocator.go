@@ -20,6 +20,11 @@ func (api *MockLocator) OpenDatabase() (*sql.DB, error) {
 	return nil, nil
 }
 
+// CreateUser -
+func (api *MockLocator) CreateUser() (int64, error) {
+	return -1, nil
+}
+
 // CreateUsersTable -
 func (api *MockLocator) CreateUsersTable() error {
 	return nil

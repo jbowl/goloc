@@ -12,7 +12,15 @@ import (
 	"time"
 
 	"github.com/jbowl/goloc/internal/pkg/geoloc"
+	"github.com/jbowl/goloc/internal/pkg/goloc"
 	"github.com/jbowl/goloc/internal/pkg/postgres"
+
+	"github.com/jbowl/goloc/internal/pkg/mongoloc"
+
+	// mongo
+	//	"go.mongodb.org/mongo-driver/mongo"
+	//	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/pkg/errors" // TODO research this
 )
 
@@ -23,16 +31,24 @@ import (
 // fuser 8080/tcp
 // fuser -k 8080/tcp
 func main() {
-	key := os.Getenv("MQ_CONSUMER_KEY")
-	ls := &postgres.Locator{Db: nil, Mq: &geoloc.MqAPI{Consumerkey: key}}
 
-	db, err := ls.OpenDatabase()
+	dbflag := os.Getenv("dbflag") // use flags instead of this
+
+	key := os.Getenv("MQ_CONSUMER_KEY")
+
+	var ls goloc.Locator
+
+	if dbflag == "postgress" {
+		ls = &postgres.Locator{Db: nil, Mq: &geoloc.MqAPI{Consumerkey: key}}
+	} else {
+		ls = &mongoloc.Locator{Client: nil, Mq: &geoloc.MqAPI{Consumerkey: key}}
+	}
+	err := ls.OpenDatabase()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer db.Close()
-	ls.Db = db
+	defer ls.Close()
 
 	err = ls.CreateUsersTable()
 	if err != nil {

@@ -1,7 +1,6 @@
 package goloc
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -9,7 +8,7 @@ import (
 
 // User just email for now
 type User struct {
-	ID    int
+	ID    interface{}
 	Email string
 }
 
@@ -18,7 +17,8 @@ type User struct {
 //          Lat - lattitude
 //          Lng - longitude
 type Location struct {
-	ID      int
+	ID      interface{}
+	UserID  interface{}
 	Date    time.Time
 	Address string
 	Lat     float32
@@ -35,14 +35,20 @@ type MapAddress struct {
 // Locator - abstract interface, eventually fully CRUD
 type Locator interface {
 	Initialize() error // generic startup routine
-	OpenDatabase() (*sql.DB, error)
+
+	OpenDatabase() error
+
+	Close()
+
 	CreateUsersTable() error
 	CreateLocationsTable() error
 
-	Locations(email string) ([]Location, error) // READ GET all
-	Location(id int) (*Location, error)         // READ GET one record
+	CreateUser(user string) (interface{}, error)
 
-	CreateLocation(email string, Loc Location) (int64, error) //CREATE
+	Locations(email string) ([]Location, error) // READ GET all
+	Location(id interface{}) (*Location, error) // READ GET one record
+
+	CreateLocation(email string, Loc Location) (interface{}, error) //CREATE
 
 	DeleteLocation() // DELETE todo
 

@@ -36,6 +36,42 @@ func reqGeoLoc(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func storeUser(w http.ResponseWriter, r *http.Request) {
+
+	var user goloc.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	id, err := api.CreateUser(user.Email)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	var loc string
+
+	switch id.(type) {
+	case int:
+		loc = fmt.Sprintf("%s/user/%d", r.Host, id.(int))
+	case string:
+		loc = fmt.Sprintf("%s/user/%s", r.Host, id.(string))
+	default:
+		loc = "unknown id type"
+	}
+
+	w.Header().Set("Location", loc)
+	w.WriteHeader(http.StatusCreated)
+
+	w.Write([]byte("TODO return body for create request"))
+}
+
 // write one record to Loctions table
 func storeLocation(w http.ResponseWriter, r *http.Request) {
 
@@ -131,6 +167,8 @@ func SetAPI(service goloc.Locator) {
 // NewRouter set handler funcs and middleware
 func NewRouter() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
+
+	r.HandleFunc("/user", storeUser).Methods("POST")
 
 	r.HandleFunc("/location", storeLocation).Methods("POST")
 	r.HandleFunc("/location/{id}", getLocation).Methods("GET")
