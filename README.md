@@ -14,3 +14,29 @@ Also, need to see what can be accomplished with PostGIS. https://postgis.net/
 Working on proper package layout. Root interface package. 
 
 Abstract-ish interface is making mock db testing easier.
+
+
+//  abstract interface, trying to map NoSQL mongo to this is 
+
+type Locator interface {
+
+	Initialize() error // generic startup routine
+
+	OpenDatabase() error
+
+	Close()
+
+	CreateUsersTable() error
+	CreateLocationsTable() error
+
+	CreateUser(user string) (interface{}, error)
+
+	Locations(email string) ([]Location, error) // READ GET all
+	Location(id interface{}) (*Location, error) // READ GET one record
+
+	CreateLocation(email string, Loc Location) (interface{}, error) //CREATE
+
+	DeleteLocation() // DELETE todo
+
+	GeoLoc(Address string) (*MapAddress, error) // get address by lat long
+}
