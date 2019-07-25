@@ -218,6 +218,6 @@ func (ls *Locator) Initialize() error {
 }
 
 // Close -
-func (ls *Locator) Close() {
-	ls.Db.Close()
+func (ls *Locator) Close() error {
+	return ls.Db.Close()
 }

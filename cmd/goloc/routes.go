@@ -99,7 +99,16 @@ func storeLocation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	location := fmt.Sprintf("%s/location/%d", r.Host, id)
+	var location string
+
+	switch id.(type) {
+	case int:
+		location = fmt.Sprintf("%s/location/%d", r.Host, id.(int))
+	case string:
+		location = fmt.Sprintf("%s/locattion/%s", r.Host, id.(string))
+	default:
+		location = "unknown id type"
+	}
 
 	w.Header().Set("Location", location)
 	w.WriteHeader(http.StatusCreated)

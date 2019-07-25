@@ -1,8 +1,6 @@
 package mocklocator
 
 import (
-	"database/sql"
-
 	"github.com/jbowl/goloc/internal/pkg/goloc"
 )
 
@@ -16,12 +14,17 @@ func (api *MockLocator) Initialize() error {
 }
 
 // OpenDatabase -
-func (api *MockLocator) OpenDatabase() (*sql.DB, error) {
-	return nil, nil
+func (api *MockLocator) OpenDatabase() error {
+	return nil
+}
+
+// Close -
+func (api *MockLocator) Close() error {
+	return nil
 }
 
 // CreateUser -
-func (api *MockLocator) CreateUser() (int64, error) {
+func (api *MockLocator) CreateUser(email string) (interface{}, error) {
 	return -1, nil
 }
 
@@ -41,12 +44,16 @@ func (api *MockLocator) Locations(string) ([]goloc.Location, error) { // READ GE
 }
 
 //Location -
-func (api *MockLocator) Location(int) (*goloc.Location, error) {
+func (api *MockLocator) Location(interface{}) (*goloc.Location, error) {
+
+    
+
+
 	return nil, nil
 }
 
 //CreateLocation -
-func (api *MockLocator) CreateLocation(email string, loc goloc.Location) (int64, error) {
+func (api *MockLocator) CreateLocation(email string, loc goloc.Location) (interface{}, error) {
 	return -1, nil
 }
 

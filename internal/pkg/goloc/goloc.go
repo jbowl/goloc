@@ -38,7 +38,7 @@ type Locator interface {
 
 	OpenDatabase() error
 
-	Close()
+	Close() error
 
 	CreateUsersTable() error
 	CreateLocationsTable() error

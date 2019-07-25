@@ -17,6 +17,8 @@ import (
 
 	"github.com/jbowl/goloc/internal/pkg/mongoloc"
 
+	"github.com/go-redis/redis"
+
 	// mongo
 	//	"go.mongodb.org/mongo-driver/mongo"
 	//	"go.mongodb.org/mongo-driver/mongo/options"
@@ -30,7 +32,14 @@ import (
 // https://blog.cloudflare.com/exposing-go-on-the-internet/
 // fuser 8080/tcp
 // fuser -k 8080/tcp
+
+var client *redis.Client
+
 func main() {
+
+	// move some env strings to redis
+	//client = redis.NewClient(&redis.Options{Addr: "localhost:6379"})
+	//	key, err :=
 
 	dbflag := os.Getenv("dbflag") // use flags instead of this
 
@@ -112,7 +121,8 @@ func main() {
 
 	<-sigChannel
 
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	server.Shutdown(ctx)
 }
