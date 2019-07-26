@@ -102,6 +102,21 @@ func (ls *Locator) CreateUser(email string) (interface{}, error) {
 
 }
 
+// DeleteLocation -
+func (ls *Locator) DeleteLocation(id interface{}) error {
+
+	sqlStatement := `
+	DELETE FROM locations
+	WHERE id = $1;`
+	result, err := ls.Db.Exec(sqlStatement, id.(string))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(result.RowsAffected())
+	return nil
+}
+
 // CreateLocation Create a Location record for user with email
 func (ls *Locator) CreateLocation(email string, loc goloc.Location) (interface{}, error) {
 
@@ -139,11 +154,6 @@ func (ls *Locator) GeoLoc(Address string) (*goloc.MapAddress, error) {
 	}
 
 	return &goloc.MapAddress{Address: ll.Address, Lat: ll.Lat, Lng: ll.Lng}, nil
-}
-
-// DeleteLocation todo
-func (ls *Locator) DeleteLocation() {
-
 }
 
 // CreateUsersTable creates if doesn't exist

@@ -50,7 +50,7 @@ type Locator interface {
 
 	CreateLocation(email string, Loc Location) (interface{}, error) //CREATE
 
-	DeleteLocation() // DELETE todo
+	DeleteLocation(id interface{}) error // DELETE todo
 
 	GeoLoc(Address string) (*MapAddress, error) // get address by lat long
 }

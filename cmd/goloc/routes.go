@@ -160,6 +160,29 @@ func getLocation(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&locs)
 }
 
+func deleteLocation(w http.ResponseWriter, r *http.Request) {
+
+	// can't pass mongo id like this string
+	vars := mux.Vars(r)
+	//id, err := strconv.Atoi(vars["id"])
+	id := vars["id"]
+	fmt.Println(id)
+
+	err := api.DeleteLocation(id)
+
+	// respond to this request with a call to Mapquest API to get lat/lng
+	//	locs, err := api.Location(id)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	//	json.NewEncoder(w).Encode(&locs)
+}
+
 // TODO add logging messages
 func middleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -177,12 +200,13 @@ func SetAPI(service goloc.Locator) {
 func NewRouter() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
-	r.HandleFunc("/user", storeUser).Methods("POST")
-
+	r.HandleFunc("/user", storeUser).Methods("POST") //create
 	r.HandleFunc("/location", storeLocation).Methods("POST")
-	r.HandleFunc("/location/{id}", getLocation).Methods("GET")
 
+	r.HandleFunc("/location/{id}", getLocation).Methods("GET")
 	r.HandleFunc("/locations", getLocations).Methods("GET")
+
+	r.HandleFunc("/location/{id}", deleteLocation).Methods("DELETE")
 
 	r.HandleFunc("/geoloc", reqGeoLoc).Methods("GET")
 

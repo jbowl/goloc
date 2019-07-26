@@ -2,6 +2,7 @@ package mongoloc
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jbowl/goloc/internal/pkg/geoloc"
@@ -120,6 +121,31 @@ func (ls *Locator) Location(interface{}) (*goloc.Location, error) {
 	return nil, nil
 }
 
+// DeleteLocation -
+func (ls *Locator) DeleteLocation(id interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
+	defer cancel()
+
+	//	oid := fmt.Sprintf(`ObjectId("%s")`, id)
+
+	oid, err := primitive.ObjectIDFromHex(id.(string))
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": oid}
+
+	locations := ls.DB.Collection("locations")
+
+	result, err := locations.DeleteMany(ctx, filter)
+	if err != nil {
+		return err
+	}
+	fmt.Println(result.DeletedCount)
+
+	return nil
+}
+
 // CreateLocation Create a Location record for user with email
 func (ls *Locator) CreateLocation(email string, loc goloc.Location) (interface{}, error) {
 
@@ -170,11 +196,6 @@ func (ls *Locator) GeoLoc(Address string) (*goloc.MapAddress, error) {
 	}
 
 	return &goloc.MapAddress{Address: ll.Address, Lat: ll.Lat, Lng: ll.Lng}, nil
-}
-
-// DeleteLocation todo
-func (ls *Locator) DeleteLocation() {
-
 }
 
 // CreateUser -
