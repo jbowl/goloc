@@ -11,7 +11,7 @@ import (
 	"github.com/jbowl/goloc/internal/pkg/goloc"
 )
 
-var api goloc.Locator // global to this file, TODO handle a better way
+var locapi goloc.Locator // global to this file, TODO handle a better way
 
 func reqGeoLoc(w http.ResponseWriter, r *http.Request) {
 	/* not a good idea
@@ -22,7 +22,7 @@ func reqGeoLoc(w http.ResponseWriter, r *http.Request) {
 	*/
 	location := r.URL.Query().Get("location")
 
-	mapAddress, err := api.GeoLoc(location)
+	mapAddress, err := locapi.GeoLoc(location)
 
 	// respond to this request with a call to Mapquest API to get lat/lng
 	if err != nil {
@@ -47,7 +47,7 @@ func storeUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := api.CreateUser(user.Email)
+	id, err := locapi.CreateUser(user.Email)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -91,7 +91,7 @@ func storeLocation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := api.CreateLocation(user, loc)
+	id, err := locapi.CreateLocation(user, loc)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -123,7 +123,7 @@ func getLocations(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(email)
 
-	locs, err := api.Locations(email)
+	locs, err := locapi.Locations(email)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -148,7 +148,7 @@ func getLocation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// respond to this request with a call to Mapquest API to get lat/lng
-	locs, err := api.Location(id)
+	locs, err := locapi.Location(id)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -168,7 +168,7 @@ func deleteLocation(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	fmt.Println(id)
 
-	err := api.DeleteLocation(id)
+	err := locapi.DeleteLocation(id)
 
 	// respond to this request with a call to Mapquest API to get lat/lng
 	//	locs, err := api.Location(id)
@@ -193,7 +193,7 @@ func middleWare(next http.Handler) http.Handler {
 
 // SetAPI -
 func SetAPI(service goloc.Locator) {
-	api = service
+	locapi = service
 }
 
 // NewRouter set handler funcs and middleware
